@@ -16,7 +16,7 @@ client = TembaClient(RAPIDPRO_HOST, API_TOKEN)
 #TODO: replace get connector db to get openmrs db
 def get_openmrs_contacts():
     """ Get records function """
-    mrs_database = Database().get_connector_db()
+    mrs_database = Database().get_openmrs_db()
     connection = vm.get_db_connector(
         mrs_database.hostname,
         mrs_database.username,
@@ -25,6 +25,8 @@ def get_openmrs_contacts():
     )
     last_checked = get_last_checked()
     contacts = vm.get_contacts(connection, last_checked)
+
+    print contacts
 
     return contacts
 
@@ -131,8 +133,11 @@ def create_contact():
 
 
 if __name__ == "__main__":
-    schedule.every(2).minutes.do(create_contact)
-
+    #schedule.every(2).minutes.do(create_contact)
+    '''
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(1) 
+    '''
+
+    contacts = get_openmrs_contacts()
