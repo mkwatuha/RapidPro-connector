@@ -24,6 +24,8 @@ CONNECTOR_DB_TABLES = {
 }
 
 OPENMRS_DB_TABLES = {
-    'PROGRAMS':'programs',
-    'USERS':'users',
+    'PROGRAMS':'program',
+    'PATIENT_PROGRAM':'patient_program',
+    'PHONE_NUMBERS':'patient_identifier',
+    'IDENTIFIER_TYPE':'patient_identifier_type',
 }
