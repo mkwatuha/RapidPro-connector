@@ -10,6 +10,7 @@ import api_requests as api
 import utils as util
 from temba_client.v2 import TembaClient
 from temba_client.v2.types import Contact as TembaContact
+from temba_client.exceptions import TembaException
 
 client = TembaClient(RAPIDPRO_HOST, API_TOKEN)
 
@@ -114,15 +115,15 @@ def create_contact():
     for contact in contacts:
         urns = [util.urns_parser(contact.number)]
         try:
-            contact_obj = client.create_contact(name=contact.username, urns=urns)
+            contact_obj = client.create_contact(name=contact.name, urns=urns)
             contact_list.append(contact_obj)
             print contact_obj.name
             if last_checked < contact.timestamp:
                 last_checked = contact.timestamp
-        except Exception as ex:
+        except TembaException as ex:
             for field, field_errors in ex.errors.iteritems():
-                for field_error in field_errors:
-                    print '{} {}'.format(field, field_error)
+                print "exception"
+                print field_errors
 
         finally:
             print 'Contact created'
@@ -140,4 +141,4 @@ if __name__ == "__main__":
         time.sleep(1) 
     '''
 
-    contacts = get_openmrs_contacts()
+    create_contact()
