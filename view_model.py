@@ -4,7 +4,7 @@ from datetime import datetime
 import mysql.connector
 from mysql.connector import Error
 from settings import CONNECTOR_DB_TABLES as tables
-from models import ContactNumber, Database
+from models import ContactNumber, Database, OpenMRSContact
 
 def get_db_connector(hostname, username, password, database):
     """ Return db connector """
@@ -16,12 +16,19 @@ def get_contacts(conn, last_checked):
     #last_checked =datetime.strftime(last_checked, '%Y-%m-%d %H:%M:%S')
     print last_checked
     query = """ SELECT * FROM Users WHERE modified_at >%s """
-    data = (last_checked,)
+    query = """ SELECT program.name, patient_program.date_created, person_name.given_name, person_name.middle_name, person_name.family_name, patient_identifier.identifier
+      FROM patient_program INNER JOIN program ON patient_program.program_id = program.program_id  
+      INNER JOIN patient_identifier ON patient_identifier.patient_id = patient_program.patient_id  
+      INNER JOIN person_name ON patient_program.patient_id = person_name.person_id 
+      WHERE patient_identifier.identifier_type = %s AND patient_program.date_created>%s; """
+
+    data = (14, last_checked,)
     cur = conn.cursor()
     cur.execute(query, data)
     contacts = []
-    for username, Phone, Location, modified in cur.fetchall():
-        contact = ContactNumber(username, Phone, modified)
+    for program_name, date_created, given_name, middle_name, family_name, identifier in cur.fetchall():
+        name = '{} {} {}'.format(given_name, middle_name, family_name)
+        contact = OpenMRSContact(name,identifier, program_name)
         contacts.append(contact)
 
     conn.close()

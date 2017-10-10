@@ -43,6 +43,18 @@ class ContactNumber:
         """ readable model representation """
         repr_name = '{} {}'.format(self.username, self.number)
         return repr_name.strip()
+class OpenMRSContact:
+    """ Model that holds contact from openmrs """
+    def __init__(self, name, number, program_name=None):
+        """ Constructor """
+        self.name = name
+        self.number = number
+        self.program_name = program_name
+
+    def __repr__(self):
+        """ readable model representation """
+        repr_name = '{} {}'.format(self.name, self.number)
+        return repr_name.strip()
 
 class Contact:
     """ Contact class """
