@@ -29,7 +29,7 @@ def get_contacts(conn, last_checked):
     contacts = []
     for program_name, date_created, given_name, middle_name, family_name, identifier in cur.fetchall():
         name = '{} {} {}'.format(given_name, middle_name, family_name)
-        contact = OpenMRSContact(name,identifier, program_name)
+        contact = OpenMRSContact(name, identifier, date_created, program_name)
         contacts.append(contact)
 
     conn.close()

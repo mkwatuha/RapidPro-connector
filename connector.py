@@ -118,11 +118,10 @@ def create_contact():
             contact_obj = client.create_contact(name=contact.name, urns=urns)
             contact_list.append(contact_obj)
             print contact_obj.name
-            if last_checked < contact.timestamp:
-                last_checked = contact.timestamp
+            if last_checked < contact.date_created:
+                last_checked = contact.date_created
         except TembaException as ex:
             for field, field_errors in ex.errors.iteritems():
-                print "exception"
                 print field_errors
 
         finally:
