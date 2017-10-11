@@ -1,7 +1,7 @@
 # API urls
 
-HOST = 'http://127.0.0.1:8000'
-HOST_API = 'http://127.0.0.1:8000/api'
+HOST = 'http://45.79.138.76'
+HOST_API = 'http://45.79.138.76'
 
 CONTACTS_URL = HOST_API + '/v2/contacts.json'
 BROADCASTS_URL = HOST_API +'/v2/broadcasts.json'
