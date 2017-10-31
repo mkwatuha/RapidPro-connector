@@ -10,13 +10,14 @@ import api_requests as api
 import utils as util
 from temba_client.v2 import TembaClient
 from temba_client.v2.types import Contact as TembaContact
+from temba_client.exceptions import TembaException
 
 client = TembaClient(RAPIDPRO_HOST, API_TOKEN)
 
 #TODO: replace get connector db to get openmrs db
 def get_openmrs_contacts():
     """ Get records function """
-    mrs_database = Database().get_connector_db()
+    mrs_database = Database().get_openmrs_db()
     connection = vm.get_db_connector(
         mrs_database.hostname,
         mrs_database.username,
@@ -25,6 +26,8 @@ def get_openmrs_contacts():
     )
     last_checked = get_last_checked()
     contacts = vm.get_contacts(connection, last_checked)
+
+    print contacts
 
     return contacts
 
@@ -112,15 +115,14 @@ def create_contact():
     for contact in contacts:
         urns = [util.urns_parser(contact.number)]
         try:
-            contact_obj = client.create_contact(name=contact.username, urns=urns)
+            contact_obj = client.create_contact(name=contact.name, urns=urns)
             contact_list.append(contact_obj)
             print contact_obj.name
-            if last_checked < contact.timestamp:
-                last_checked = contact.timestamp
-        except Exception as ex:
+            if last_checked < contact.date_created:
+                last_checked = contact.date_created
+        except TembaException as ex:
             for field, field_errors in ex.errors.iteritems():
-                for field_error in field_errors:
-                    print '{} {}'.format(field, field_error)
+                print field_errors
 
         finally:
             print 'Contact created'
@@ -131,8 +133,11 @@ def create_contact():
 
 
 if __name__ == "__main__":
-    schedule.every(2).minutes.do(create_contact)
-
+    #schedule.every(2).minutes.do(create_contact)
+    '''
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(1) 
+    '''
+
+    create_contact()

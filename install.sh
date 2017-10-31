@@ -15,7 +15,7 @@ declare -a TEXT=("[Unit]"
                 "After=multi-user.target"
                 "[Service]"
                 "Type=idle"
-                "ExecStart=/usr/bin/python /home/ekirapa/Paul/Projects/Intellisoft/RapidPro/Rapidpro_connector/connector.py"
+                "ExecStart=/usr/bin/python /home/admin/connector/Rapidpro_connector/connector.py"
                 "[Install]"
                 "WantedBy=multi-user.target"
 )

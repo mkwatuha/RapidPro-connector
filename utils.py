@@ -12,7 +12,22 @@ def get_logger(level=None):
 
 def urns_parser(number):
     """ convert number to urns acceptable to rapid pro """
+    number = parse_phone_number(number)
     return "tel:" + number
+
+def parse_phone_number(number):
+    """ check for valid phone number """
+    if number[0] == '+' and len(number) == 13:
+        return number
+    elif number[0] == '0' and len(number) == 10:
+        number  = '+254' + number[1:]
+        return number
+    elif len(number) == 9:
+        number  = '+254' + number
+        return number
+
+    return number
+        
 
 def contact_builder(name, number):
     """ Build and return an instance of Contact """
