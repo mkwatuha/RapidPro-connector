@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from settings import RAPIDPRO_HOST, API_TOKEN
 import api_requests as api
 import utils as util
+from ConnectorUtils import ConnectorUtils
 from temba_client.v2 import TembaClient
 from temba_client.v2.types import Contact as TembaContact
 from temba_client.exceptions import TembaException
@@ -24,40 +25,17 @@ def get_openmrs_contacts():
         mrs_database.password,
         mrs_database.database
     )
-    last_checked = get_last_checked()
+    last_checked = ConnectorUtils().get_last_checked()
     contacts = vm.get_contacts(connection, last_checked)
 
     print contacts
 
     return contacts
 
-def get_last_checked():
-    """ Get latest timestamp checked from openmrs """
-    database = Database().get_connector_db()
-    conn = vm.get_db_connector(
-        database.hostname,
-        database.username,
-        database.password,
-        database.database
-    )
-    last_checked = vm.get_last_modified(conn)
-
-    return last_checked
-def update_last_checked(last_checked):
-    """ update last checked value in connector db """
-    database = Database().get_connector_db()
-    conn = vm.get_db_connector(
-        database.hostname,
-        database.username,
-        database.password,
-        database.database
-    )
-    vm.update_last_checked(conn, last_checked)
-
 def schedule_job():
     """ Scheduled job """
     contacts = get_openmrs_contacts()
-    last_checked = get_last_checked()
+    last_checked = ConnectorUtils().get_last_checked()
     print last_checked
     for contact in contacts:
         if last_checked < contact.timestamp:
@@ -71,7 +49,7 @@ def schedule_job():
         database.password,
         database.database
     )
-    vm.update_last_checked(conn,last_checked)
+    ConnectorUtils().update_last_checked(last_checked)
     #Send contact to server
     for contact_number in contacts:
         response = None
@@ -111,7 +89,7 @@ def create_contact():
     """ send contact to server"""
     contact_list = []
     contacts = get_openmrs_contacts()
-    last_checked = get_last_checked()
+    last_checked = ConnectorUtils().get_last_checked()
     for contact in contacts:
         urns = [util.urns_parser(contact.number)]
         try:
@@ -121,13 +99,9 @@ def create_contact():
             if last_checked < contact.date_created:
                 last_checked = contact.date_created
         except TembaException as ex:
-            for field, field_errors in ex.errors.iteritems():
-                print field_errors
+            print  ex
 
-        finally:
-            print 'Contact created'
-
-    update_last_checked(last_checked)
+    ConnectorUtils().update_last_checked(last_checked)
     if len(contact_list) > 0:
         send_message(contact_list)
 
