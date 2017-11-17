@@ -13,7 +13,7 @@ def get_db_connector(hostname, username, password, database):
     conn = mysql.connector.connect(host=hostname, user=username, passwd=password, db=database)
     return conn
 
-def get_contacts(conn, last_checked):
+def get_clients_enrollment_contacts(conn, last_checked):
     """ Get contacts from DB """
     #last_checked =datetime.strftime(last_checked, '%Y-%m-%d %H:%M:%S')
     #query = """ SELECT * FROM Users WHERE modified_at >%s """
@@ -73,13 +73,13 @@ def update_last_checked(conn, last_checked, id_type):
         conn.close()
 
 #TODO: Only pick the last value per patient id
-def get_kickoff_patients(conn,last_checked):
+def get_kickoff_client_contacts(conn,last_checked):
     """ Get patients who start their nutrition program  """
     cursor = conn.cursor()
     query = """ SELECT encounter.encounter_datetime, encounter.patient_id, person_name.given_name, person_name.middle_name, person_name.family_name,patient_identifier.identifier
                 FROM encounter INNER JOIN patient_identifier ON encounter.patient_id = patient_identifier.patient_id
                 INNER JOIN person_name ON encounter.patient_id = person_name.person_id
-                WHERE encounter_type = %s AND patient_identifier.identifier_type= %S AND encounter.encounter_datetime>%s;
+                WHERE encounter_type = %s AND patient_identifier.identifier_type= %s AND encounter.encounter_datetime>%s;
                  """
     data = (52, 11, last_checked)
     contacts = []

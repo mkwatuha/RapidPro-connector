@@ -7,6 +7,7 @@ from ConnectorUtils import ConnectorUtils
 from temba_client.v2 import TembaClient
 from temba_client.exceptions import TembaException
 import messageutils
+from constants import ENROLLMENT_TYPE_ID, KICKOFF_TYPE_ID
 
 class SendMessage:
     """ Send Message class. Gets contacts and send messages """
@@ -25,7 +26,15 @@ class SendMessage:
             mrs_database.database
         )
         last_checked = ConnectorUtils().get_last_checked(self.type_id)
-        contacts = vm.get_contacts(connection, last_checked)
+        if self.type_id == ENROLLMENT_TYPE_ID:
+            last_checked = ConnectorUtils().get_last_checked(self.type_id)
+            contacts = vm.get_clients_enrollment_contacts(connection, last_checked)
+        elif self.type_id == KICKOFF_TYPE_ID:
+            last_checked = ConnectorUtils().get_last_checked(self.type_id)
+            contacts = vm.get_kickoff_client_contacts(connection, last_checked)
+        else:
+            last_checked = ConnectorUtils().get_last_checked(self.type_id)
+            contacts = vm.get_clients_enrollment_contacts(connection, last_checked)
 
         print contacts
 
