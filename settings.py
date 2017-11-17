@@ -20,7 +20,7 @@ CONNECTOR_DB_SETTINGS = {
 }
 
 CONNECTOR_DB_TABLES = {
-    "LAST_CHECKED":'Last_Checked',
+    "LAST_CHECKED":"Last_Checked",
     "USERS":'Users',
 }
 

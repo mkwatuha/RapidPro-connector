@@ -12,11 +12,12 @@ from ConnectorUtils import ConnectorUtils
 from temba_client.v2 import TembaClient
 from temba_client.v2.types import Contact as TembaContact
 from temba_client.exceptions import TembaException
+from constants import  *
 
 client = TembaClient(RAPIDPRO_HOST, API_TOKEN)
 
 #TODO: replace get connector db to get openmrs db
-def get_openmrs_contacts():
+def get_openmrs_contacts(id_type):
     """ Get records function """
     mrs_database = Database().get_openmrs_db()
     connection = vm.get_db_connector(
@@ -25,7 +26,7 @@ def get_openmrs_contacts():
         mrs_database.password,
         mrs_database.database
     )
-    last_checked = ConnectorUtils().get_last_checked()
+    last_checked = ConnectorUtils().get_last_checked(id_type)
     contacts = vm.get_contacts(connection, last_checked)
 
     print contacts
@@ -49,7 +50,7 @@ def schedule_job():
         database.password,
         database.database
     )
-    ConnectorUtils().update_last_checked(last_checked)
+    ConnectorUtils().update_last_checked(last_checked,ENROLLMENT_TYPE_ID)
     #Send contact to server
     for contact_number in contacts:
         response = None
@@ -88,8 +89,8 @@ def send_message(contact_list):
 def create_contact():
     """ send contact to server"""
     contact_list = []
-    contacts = get_openmrs_contacts()
-    last_checked = ConnectorUtils().get_last_checked()
+    contacts = get_openmrs_contacts(ENROLLMENT_TYPE_ID)
+    last_checked = ConnectorUtils().get_last_checked(ENROLLMENT_TYPE_ID)
     for contact in contacts:
         urns = [util.urns_parser(contact.number)]
         try:
@@ -101,7 +102,7 @@ def create_contact():
         except TembaException as ex:
             print  ex
 
-    ConnectorUtils().update_last_checked(last_checked)
+    ConnectorUtils().update_last_checked(last_checked, ENROLLMENT_TYPE_ID)
     if len(contact_list) > 0:
         send_message(contact_list)
 
@@ -115,3 +116,4 @@ if __name__ == "__main__":
     '''
 
     create_contact()
+    #print ConnectorUtils().get_last_checked(ENROLLMENT_TYPE_ID)

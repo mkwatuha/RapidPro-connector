@@ -35,25 +35,32 @@ def get_contacts(conn, last_checked):
     conn.close()
     return contacts
 
-def get_last_modified(conn):
+def get_last_modified(conn,id_type):
     """ Get last checked timestamp from connector db """
     cur = conn.cursor()
     last_val = None
     table = str(tables.get('LAST_CHECKED'))
-    cur.execute("SELECT * FROM " + table)
-    for  last_checked, last_modified, id in cur:
+    query_builder = []
+    query_builder.append(' SELECT * FROM ')
+    query_builder.append(table)
+    query_builder.append(" WHERE id= ")
+    query_builder.append(str(id_type))
+    query = ''.join(query_builder)
+    
+    cur.execute(query)
+    for  last_checked, last_modified, id_val, description in cur:
         #last_val = datetime.strptime(last_checked, '%Y-%m-%d %H:%M:%S')
         last_val = last_checked
     conn.close()
     return last_val
 
-def update_last_checked(conn, last_checked):
+def update_last_checked(conn, last_checked, id_type):
     """ Update timestamp of last value checked """
     cursor = conn.cursor()
     query = """ UPDATE Last_Checked
                 SET last_checked = %s WHERE id=%s"""
 
-    data = (last_checked, 1)
+    data = (last_checked, id_type)
     try:
         cursor = conn.cursor()
         cursor.execute(query, data)

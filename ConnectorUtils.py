@@ -12,11 +12,11 @@ class ConnectorUtils:
             self.connector_db.database
         )
 
-    def update_last_checked(self, last_checked):
+    def update_last_checked(self, last_checked,id_type):
         """ Update last checked value in the coonector database """
-        vm.update_last_checked(self.connector_conn, last_checked)
+        vm.update_last_checked(self.connector_conn, last_checked, id_type)
 
 
-    def get_last_checked(self):
+    def get_last_checked(self,id_val):
         """ Get timestamp of the last checked record  """
-        return vm.get_last_modified(self.connector_conn)
+        return vm.get_last_modified(self.connector_conn, id_val)
