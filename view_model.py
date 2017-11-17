@@ -55,10 +55,8 @@ def update_last_checked(conn, last_checked):
 
     data = (last_checked, 1)
     try:
-        # update book title
         cursor = conn.cursor()
         cursor.execute(query, data)
-        # accept the changes
         conn.commit()
 
     except Error as error:
@@ -66,3 +64,28 @@ def update_last_checked(conn, last_checked):
     finally:
         cursor.close()
         conn.close()
+
+#TODO: Only pick the last value per patient id
+def get_kickoff_patients(conn,last_checked):
+    """ Get patients who start their nutrition program  """
+    cursor = conn.cursor()
+    query = """ SELECT encounter.encounter_datetime, encounter.patient_id, person_name.given_name, person_name.middle_name, person_name.family_name,patient_identifier.identifier
+                FROM encounter INNER JOIN patient_identifier ON encounter.patient_id = patient_identifier.patient_id
+                INNER JOIN person_name ON encounter.patient_id = person_name.person_id
+                WHERE encounter_type = %s AND patient_identifier.identifier_type= %S AND encounter.encounter_datetime>%s;
+                 """
+    data = (52, 11, last_checked)
+    contacts = []
+    try:
+        cursor.execute(query, data)
+        for date_time, patient_id, given_name,middle_name, family_name, identifier  in cursor.fetchall():
+            name = '{} {} {}'.format(given_name, middle_name, family_name)
+            contact = OpenMRSContact(name, identifier, date_time, 'Nutrition')
+            contacts.append(contact)
+
+    except Error as error:
+        print error
+    finally:
+        cursor.close()
+        conn.close()
+    return contacts
