@@ -1,8 +1,8 @@
 #MOdels file
 import json
-from api_urls import *
+from api_urls import CONTACTS_URL, BROADCASTS_URL
 from abstract_request import AbstractSimpleRequest, AbstractDataRequest
-from settings import CONNECTOR_DB_SETTINGS,OPENMRS_DB_SETTINGS
+from settings import CONNECTOR_DB_SETTINGS, OPENMRS_DB_SETTINGS
 
 class Database:
     """ database class """
