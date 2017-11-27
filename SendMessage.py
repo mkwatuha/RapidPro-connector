@@ -7,7 +7,7 @@ from ConnectorUtils import ConnectorUtils
 from temba_client.v2 import TembaClient
 from temba_client.exceptions import TembaException
 import messageutils
-from constants import ENROLLMENT_TYPE_ID, KICKOFF_TYPE_ID
+from constants import ENROLLMENT_TYPE_ID, KICKOFF_TYPE_ID, BIRTHDAY_TYPE_ID
 
 class SendMessage:
     """ Send Message class. Gets contacts and send messages """
@@ -32,6 +32,8 @@ class SendMessage:
         elif self.type_id == KICKOFF_TYPE_ID:
             last_checked = ConnectorUtils().get_last_checked(self.type_id)
             contacts = vm.get_kickoff_client_contacts(connection, last_checked)
+        elif self.type_id == BIRTHDAY_TYPE_ID:
+            contacts = vm.get_birthday_contacts(connection)
         else:
             last_checked = ConnectorUtils().get_last_checked(self.type_id)
             contacts = vm.get_clients_enrollment_contacts(connection, last_checked)
@@ -64,6 +66,7 @@ class SendMessage:
         return {
             1: messageutils.enrollment_message(name, program),
             2: messageutils.program_kick_off_message(name),
+            3: messageutils.birthday_message(name),
         }.get(self.type_id, messageutils.enrollment_message(name, program))
 
     def broadcast_message(self):

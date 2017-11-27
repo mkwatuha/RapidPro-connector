@@ -96,3 +96,28 @@ def get_kickoff_client_contacts(conn,last_checked):
         cursor.close()
         conn.close()
     return contacts
+
+def get_birthday_contacts(conn):
+    """ Get contacts with birthday as today """
+    cursor = conn.cursor()
+    query = """ SELECT patient_identifier.identifier, person_name.given_name, person_name.middle_name, person_name.family_name
+                FROM person_name INNER JOIN person ON person_name.person_id = person.person_id
+                INNER JOIN patient_identifier ON patient_identifier.patient_id = person.person_id
+                WHERE 
+                patient_identifier.identifier_type= %s AND DATE_FORMAT(FROM_UNIXTIME(person.birthdate),'%m-%d') = DATE_FORMAT(NOW(),'%m-%d');
+                """
+    contacts = []
+    data = (11)
+    try:
+        cursor.execute(query, data)
+        for identifier, given_name, middle_name, family_name in cursor.fetchall():
+            name = '{} {} {}'.format(given_name, middle_name, family_name)
+            contact = OpenMRSContact(name, identifier)
+            contacts.append(contact)
+
+    except Error as error:
+        print error
+    finally:
+        cursor.close()
+        conn.close()
+    return contacts

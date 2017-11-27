@@ -45,7 +45,7 @@ class ContactNumber:
         return repr_name.strip()
 class OpenMRSContact:
     """ Model that holds contact from openmrs """
-    def __init__(self, name, number, date_created, program_name=None):
+    def __init__(self, name, number, date_created=None, program_name=None):
         """ Constructor """
         self.name = name
         self.number = number
