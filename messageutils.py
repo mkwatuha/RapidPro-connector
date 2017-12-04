@@ -1,8 +1,8 @@
 #File with methods to build messages
 
-def enrollment_message(name, program):
+def enrollment_message(name):
     """ Return enrrollment name """
-    return 'Welcome {} to the Wellness {} program'.format(name, program)
+    return 'Welcome {} to the Wellness Nutrition program'.format(name)
 
 def program_kick_off_message(name):
     """ Return kickoff message"""

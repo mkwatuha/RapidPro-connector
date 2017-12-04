@@ -17,7 +17,7 @@ class SendMessage:
         self.client = TembaClient(RAPIDPRO_HOST, API_TOKEN)
 
     def get_openmrs_contacts(self):
-        """ Get records function """
+        """ Get contacts from OPENMRS """
         mrs_database = Database().get_openmrs_db()
         connection = vm.get_db_connector(
             mrs_database.hostname,
@@ -40,9 +40,37 @@ class SendMessage:
             last_checked = ConnectorUtils().get_last_checked(self.type_id)
             contacts = vm.get_clients_enrollment_contacts(connection, last_checked)
 
-        print contacts
-
         return contacts
+
+    def check_contacts(self, contacts):
+        """ Check if openmrs contact is saved in rapidpro. Returns a collection of rapidpro contacts"""
+        contact_list = []
+        last_checked = ConnectorUtils().get_last_checked(self.type_id)
+        for contact in contacts:
+            urn = util.urns_parser(contact.number)
+            try:
+                temba_contact = self.client.get_contacts(urn=urn).first()
+                if temba_contact:
+                    #If contact is found
+                    contact_list.append(temba_contact)
+                    if last_checked < contact.date_created:
+                        last_checked = contact.date_created
+                else:
+                    #contact not found, save to rapidpro first
+                    try:
+                        contact_obj = self.client.create_contact(name=contact.name, urns=[urn])
+                        contact_list.append(contact_obj)
+
+                        if last_checked < contact.date_created:
+                            last_checked = contact.date_created
+                    except TembaException as ex:
+                        contact_list.append(None)
+                        print  ex
+            except TembaException as ex:
+                contact_list.append(None)
+                print ex;
+        ConnectorUtils().update_last_checked(last_checked, self.type_id)
+        return contact_list
 
     def get_contacts(self):
         """ Get contacts from OpenMRS and send to RapidPro"""
@@ -54,7 +82,7 @@ class SendMessage:
             try:
                 contact_obj = self.client.create_contact(name=contact.name, urns=urns)
                 contact_list.append(contact_obj)
-                print contact_obj.name
+
                 if last_checked < contact.date_created:
                     last_checked = contact.date_created
             except TembaException as ex:
@@ -63,27 +91,42 @@ class SendMessage:
         ConnectorUtils().update_last_checked(last_checked, self.type_id)
         return contact_list
 
-    def get_message(self, contact):
+    def get_message(self, name, provider=None, start_date=None):
         """ Get message to be sent from message utils """
         return {
-            1: messageutils.enrollment_message(contact.name, contact.program),
-            2: messageutils.program_kick_off_message(contact.name),
-            3: messageutils.birthday_message(contact.name),
-            4: messageutils.appointment_booking_message(contact.name, contact.provider_name, contact.start_date,contact.start_date, VENUE)
-        }.get(self.type_id, messageutils.enrollment_message(contact.name, contact.program))
+            1: messageutils.enrollment_message(name),
+            2: messageutils.program_kick_off_message(name),
+            3: messageutils.birthday_message(name),
+            4: messageutils.appointment_booking_message(name, provider, start_date, start_date, VENUE)
+        }.get(self.type_id, messageutils.enrollment_message(name))
 
     def broadcast_message(self):
         """ Method to be called to initiate sending message procedure """
-        contact_list = self.get_contacts()
-        if contact_list:
-            try:
-                for contact in contact_list:
-                    text = self.get_message(contact)
-                    contacts = [contact]
+        openmrs_contacts = self.get_openmrs_contacts()
+        contact_list = self.check_contacts(openmrs_contacts)
+
+        if self.type_id == APPOINTMENT_REMINDER_TYPE_ID:
+            if contact_list:
+                for index,contact in enumerate(contact_list):
+                    
+                    if openmrs_contacts[index]:
+                        contact_obj = openmrs_contacts[index]
+                        text = self.get_message(contact_obj.name, contact_obj.provider_name, contact_obj.start_date, contact_obj.start_date)
+                        contacts = [contact]
+                        try:
+                            broadcast = self.client.create_broadcast(text, contacts=contacts)
+                        except Exception as ex:
+                            for field, field_errors in ex.errors.iteritems():
+                                for field_error in field_errors:
+                                    print '{} {}'.format(field, field_error)
+        else:
+            for contact in contact_list:
+                text = self.get_message(contact.name)
+                contacts=[contact]
+                try:
                     broadcast = self.client.create_broadcast(text, contacts=contacts)
-                    print broadcast.text
-            except Exception as ex:
-                for field, field_errors in ex.errors.iteritems():
-                    for field_error in field_errors:
-                        print '{} {}'.format(field, field_error)
+                except Exception as ex:
+                    for field, field_errors in ex.errors.iteritems():
+                        for field_error in field_errors:
+                            print '{} {}'.format(field, field_error)
         
