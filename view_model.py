@@ -4,7 +4,7 @@ from datetime import datetime
 import mysql.connector
 from mysql.connector import Error
 from settings import CONNECTOR_DB_TABLES as tables
-from models import ContactNumber, Database, OpenMRSContact
+from models import ContactNumber, Database, OpenMRSContact, AppointmentContact
 
 #TODO: Migrate to an ORM
 
@@ -113,6 +113,35 @@ def get_birthday_contacts(conn):
         for identifier, given_name, middle_name, family_name in cursor.fetchall():
             name = '{} {} {}'.format(given_name, middle_name, family_name)
             contact = OpenMRSContact(name, identifier)
+            contacts.append(contact)
+
+    except Error as error:
+        print error
+    finally:
+        cursor.close()
+        conn.close()
+    return contacts
+
+def get_appointment_booking_contacts(conn, last_checked):
+    """ Get contacts for appointment booking alerts from OpenMRS"""
+    cursor = conn.cursor()
+    query = """ SELECT patient_identifier.identifier, person_name.given_name, person_name.middle_name, person_name.family_name, appointmentscheduling_time_slot.start_date,
+                provider.name, appointmentscheduling_appointment.date_created
+                FROM appointmentscheduling_appointment INNER JOIN patient_identifier ON patient_identifier.patient_id = appointmentscheduling_appointment.patient_id
+                INNER JOIN person_name ON person_name.person_id = appointmentscheduling_appointment.patient_id
+                INNER JOIN appointmentscheduling_time_slot ON appointmentscheduling_time_slot.time_slot_id = appointmentscheduling_appointment.time_slot_id
+                INNER JOIN appointmentscheduling_appointment_block ON appointmentscheduling_appointment_block.appointment_block_id = appointmentscheduling_time_slot.appointment_block_id
+                INNER JOIN provider ON provider.provider_id = appointmentscheduling_appointment_block.provider_id
+                WHERE patient_identifier.identifier_type = %s AND appointmentscheduling_appointment.date_created>%s;
+                """
+    
+    contacts = []
+    data = (11, last_checked)
+    try:
+        cursor.execute(query, data)
+        for identifier, given_name, middle_name, family_name, start_date, provider_name, date_created in cursor.fetchall():
+            name = '{} {} {}'.format(given_name, middle_name, family_name)
+            contact = AppointmentContact(name, identifier, start_date, provider_name, date_created)
             contacts.append(contact)
 
     except Error as error:

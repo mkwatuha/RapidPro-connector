@@ -7,7 +7,7 @@ from ConnectorUtils import ConnectorUtils
 from temba_client.v2 import TembaClient
 from temba_client.exceptions import TembaException
 import messageutils
-from constants import ENROLLMENT_TYPE_ID, KICKOFF_TYPE_ID, BIRTHDAY_TYPE_ID
+from constants import ENROLLMENT_TYPE_ID, KICKOFF_TYPE_ID, BIRTHDAY_TYPE_ID,APPOINTMENT_REMINDER_TYPE_ID, VENUE
 
 class SendMessage:
     """ Send Message class. Gets contacts and send messages """
@@ -34,6 +34,8 @@ class SendMessage:
             contacts = vm.get_kickoff_client_contacts(connection, last_checked)
         elif self.type_id == BIRTHDAY_TYPE_ID:
             contacts = vm.get_birthday_contacts(connection)
+        elif self.type_id == APPOINTMENT_REMINDER_TYPE_ID:
+            contacts = vm.get_appointment_booking_contacts(connection, last_checked)
         else:
             last_checked = ConnectorUtils().get_last_checked(self.type_id)
             contacts = vm.get_clients_enrollment_contacts(connection, last_checked)
@@ -43,7 +45,7 @@ class SendMessage:
         return contacts
 
     def get_contacts(self):
-        """ Get contacts from OpenMRS"""
+        """ Get contacts from OpenMRS and send to RapidPro"""
         contact_list = []
         contacts = self.get_openmrs_contacts()
         last_checked = ConnectorUtils().get_last_checked(self.type_id)
@@ -61,13 +63,14 @@ class SendMessage:
         ConnectorUtils().update_last_checked(last_checked, self.type_id)
         return contact_list
 
-    def get_message(self, name, program=None):
+    def get_message(self, contact):
         """ Get message to be sent from message utils """
         return {
-            1: messageutils.enrollment_message(name, program),
-            2: messageutils.program_kick_off_message(name),
-            3: messageutils.birthday_message(name),
-        }.get(self.type_id, messageutils.enrollment_message(name, program))
+            1: messageutils.enrollment_message(contact.name, contact.program),
+            2: messageutils.program_kick_off_message(contact.name),
+            3: messageutils.birthday_message(contact.name),
+            4: messageutils.appointment_booking_message(contact.name, contact.provider_name, contact.start_date,contact.start_date, VENUE)
+        }.get(self.type_id, messageutils.enrollment_message(contact.name, contact.program))
 
     def broadcast_message(self):
         """ Method to be called to initiate sending message procedure """
@@ -75,7 +78,7 @@ class SendMessage:
         if contact_list:
             try:
                 for contact in contact_list:
-                    text = self.get_message(contact.name, contact.program)
+                    text = self.get_message(contact)
                     contacts = [contact]
                     broadcast = self.client.create_broadcast(text, contacts=contacts)
                     print broadcast.text
