@@ -11,9 +11,9 @@
 ### END INIT INFO
 
 # Change the next 3 lines to suit where you install your script and what you want to call it
-DIR=/home/RapidPro-connector
+DIR=/home/admin/connector/Rapidpro_connector
 DAEMON=$DIR/connector.py
-DAEMON_NAME=aihd_rapidpro_connector_script
+DAEMON_NAME=script
 
 # Add any command line options for your daemon here
 DAEMON_OPTS=""
