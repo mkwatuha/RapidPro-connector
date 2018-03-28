@@ -36,6 +36,8 @@ class SendMessage:
             contacts = vm.get_birthday_contacts(connection)
         elif self.type_id == APPOINTMENT_REMINDER_TYPE_ID:
             contacts = vm.get_appointment_booking_contacts(connection, last_checked)
+        elif self.type_id == MISSED_APPOINTMENT_NOTIFICATION_TYPE_ID:
+            contacts = vm.get_missed_appointment_client_contacts(connection, last_checked)
         else:
             last_checked = ConnectorUtils().get_last_checked(self.type_id)
             contacts = vm.get_clients_enrollment_contacts(connection, last_checked)
@@ -97,7 +99,8 @@ class SendMessage:
             1: messageutils.enrollment_message(name),
             2: messageutils.program_kick_off_message(name),
             3: messageutils.birthday_message(name),
-            4: messageutils.appointment_booking_message(name, provider, start_date, start_date, VENUE)
+            4: messageutils.appointment_booking_message(name, provider, start_date, start_date, VENUE),
+            5:messageutils.missed_appointment_message(name, provider, start_date, start_date, VENUE)
         }.get(self.type_id, messageutils.enrollment_message(name))
 
     def broadcast_message(self):

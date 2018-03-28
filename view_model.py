@@ -150,3 +150,29 @@ def get_appointment_booking_contacts(conn, last_checked):
         cursor.close()
         conn.close()
     return contacts
+
+
+def get_missed_appointment_client_contacts(conn,last_checked):
+    """ Get patients who missed appointments  """
+    cursor = conn.cursor()
+    query = """ SELECT encounter.encounter_datetime, encounter.patient_id, person_name.given_name, person_name.middle_name, person_name.family_name,patient_identifier.identifier,value as phone_number
+                FROM encounter INNER JOIN patient_identifier ON encounter.patient_id = patient_identifier.patient_id
+                INNER JOIN person_name ON encounter.patient_id = person_name.person_id
+                INNER JOIN person_attribute pr on pr.person_id=person_name.person_id
+                WHERE encounter_type = %s AND patient_identifier.identifier_type= %s AND encounter.encounter_datetime>%s AND person_attribute_type_id=8 AND identifier like 'PN-98765';
+                 """
+    data = (8, 4, last_checked)
+    contacts = []
+    try:
+        cursor.execute(query, data)
+        for date_time, patient_id, given_name,middle_name, family_name, identifier,phone_number  in cursor.fetchall():
+            name = '{} {} {}'.format(given_name, middle_name, family_name)
+            contact = OpenMRSContact(name, phone_number, date_time, 'MissedAppointment')
+            contacts.append(contact)
+
+    except Error as error:
+        print error
+    finally:
+        cursor.close()
+        conn.close()
+    return contacts

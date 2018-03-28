@@ -60,7 +60,7 @@ CREATE TABLE `Users` (
 
 LOCK TABLES `Users` WRITE;
 /*!40000 ALTER TABLE `Users` DISABLE KEYS */;
-INSERT INTO `Users` VALUES ('Paul Ekirapa','+254716544925','Nairobi','2017-09-21 14:37:41'),('Pascal Ekirapa','+254795057561','Nairobi','2017-09-23 13:56:08'),('Ekirapa','+254716544925','Nakuru','2017-09-23 22:19:39');
+INSERT INTO `Users` VALUES ('Alfayo Kwatuha','+254703399915','Eldoret','2017-09-21 14:37:41'),('Nicholas Ingosi','+2547223254','Nairobi','2017-09-23 13:56:08');
 /*!40000 ALTER TABLE `Users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

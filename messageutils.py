@@ -2,7 +2,7 @@
 
 def enrollment_message(name):
     """ Return enrrollment name """
-    return 'Welcome {} to the Wellness Nutrition program'.format(name)
+    return 'Welcome {} to the AIHD program'.format(name)
 
 def program_kick_off_message(name):
     """ Return kickoff message"""
@@ -23,3 +23,7 @@ def birthday_message(name):
 def appointment_booking_message(client_name, partner_name, date, time, venue):
     """ Return appointment booking message alert """
     return 'Dear {}, your appointment has been confirmed with {} on {} at {} at {}'.format(client_name, partner_name, date, time, venue)
+
+def missed_appointment_message(client_name, provider_name, date, time, location):
+    """ Missed appointment message alert """
+    return 'Dear {}, you missed your appointment with {} on {} at {} at {}'.format(client_name, provider_name, date, time, location)

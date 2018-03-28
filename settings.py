@@ -2,14 +2,14 @@
 
 
 # TODO: Put token in environment
-API_TOKEN = 'f8452af03fee45dba004754aecc463a34d291042'
+API_TOKEN = 'd81c8f85960050c105ccaddc880bc380bd3436c6'
 
 RAPIDPRO_HOST = 'http://127.0.0.1:8000'
 OPENMRS_DB_SETTINGS = {
-    'DB_NAME':'openmrs',
+    'DB_NAME':'ems',
     'HOSTNAME':'localhost',
     'USERNAME':'root',
-    'PASSWORD':'password',
+    'PASSWORD':'Admin2010@#$_',
 }
 
 CONNECTOR_DB_SETTINGS = {
