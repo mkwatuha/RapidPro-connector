@@ -31,19 +31,13 @@ then
     sudo chmod 644 /lib/systemd/system/connector.service
     sudo systemctl daemon-reload
     sudo systemctl enable connector.service
+   
 
     echo "Attempting to start connector service..."
     
-
-     try:
         systemctl restart connector.service
+        journalctl -u connector.service
         sudo systemctl status connector.service
-    except:
-        print "Exception in connector service:"
-        print '-'*60
-        traceback.print_exc(file=sys.stdout)
-        print '-'*60
-
     
 else 
     echo "An error ooccured while creating service file. Contact developer"
